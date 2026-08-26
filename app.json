@@ -34,9 +34,18 @@
     "plugins": [
       "expo-splash-screen",
       [
-        "expo-speech",
+        "expo-audio",
         {
-          "speechRecognition": false
+          "microphonePermission": "Allow Cthos to access your microphone for real-time voice conversations.",
+          "enableBackgroundRecording": true
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow Cthos to use your microphone for voice commands.",
+          "speechRecognitionPermission": "Allow Cthos to perform speech recognition for conversational responses.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
         }
       ]
     ],

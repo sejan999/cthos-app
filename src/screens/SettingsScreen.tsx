@@ -6,6 +6,7 @@ import type { DrawerNavigationProp } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import { GlassCard } from '../components/GlassCard';
 import { SettingsRow } from '../components/SettingsRow';
+import { PersonaSwitcher } from '../components/PersonaSwitcher';
 import { DrawerParamList } from '../navigation/types';
 import { theme } from '../theme';
 
@@ -20,13 +21,15 @@ interface Row {
 interface Section {
   title: string;
   rows: Row[];
+  /** Render the interactive persona switcher above this group's rows. */
+  personaSwitcher?: boolean;
 }
 
 const SECTIONS: Section[] = [
   {
     title: 'Assistant',
+    personaSwitcher: true,
     rows: [
-      { icon: 'person-circle-outline', label: 'Cthos Persona', hint: 'GF · Professional · Venom' },
       { icon: 'sparkles-outline', label: 'Skills', hint: 'Voice, calls, WhatsApp, music, vision' },
       { icon: 'git-branch-outline', label: 'Sub-agents', hint: 'Mini-Cthos background workers' },
     ],
@@ -92,6 +95,12 @@ export function SettingsScreen() {
           <View key={section.title} style={styles.group}>
             <Text style={styles.groupTitle}>{section.title}</Text>
             <GlassCard style={styles.card}>
+              {section.personaSwitcher ? (
+                <>
+                  <PersonaSwitcher />
+                  <View style={styles.switcherDivider} />
+                </>
+              ) : null}
               {section.rows.map((row, i) => (
                 <SettingsRow
                   key={row.label}
@@ -144,4 +153,9 @@ const styles = StyleSheet.create({
     paddingLeft: 6,
   },
   card: { paddingVertical: 2, paddingHorizontal: theme.spacing.md },
+  switcherDivider: {
+    height: 1,
+    backgroundColor: 'rgba(111,163,240,0.10)',
+    marginVertical: theme.spacing.sm,
+  },
 });

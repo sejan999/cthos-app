@@ -4,6 +4,10 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { initVoice } from './src/store/conversationState';
+
+// Start the voice session <-> UI store binding once at app boot.
+initVoice();
 
 /**
  * Themed navigation container — forces the dark-navy palette so React

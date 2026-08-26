@@ -5,9 +5,8 @@ control, multimodal vision, and multi-persona conversation.
 
 Built with **React Native (Expo SDK 57)** + modular native-bridge architecture.
 
-> **Status: STEP 2 (UI Design System & Screens) complete.**
-> Next: STEP 3 — Voice & Personality Engine (real-time streaming, EN/HI,
-> persona switching).
+> **Status: STEP 3 (Voice & Personality Engine) complete.**
+> Next: STEP 4 — Device Automation & Sub-Agent Framework.
 
 ---
 
@@ -76,18 +75,32 @@ Set repo secret **`EXPO_TOKEN`** (EAS account token).
   screens/         Step 2: Loading, Dashboard, Settings
                    placeholder: Vision, Macro
   services/
-    ai/            agentOrchestrator, personalityManager, subAgentWorker
-    voice/         audioStreamer (STT/TTS/call gluer in STEP 3)
-    vision/        screenCapture, cameraVision (STEP 3/4)
+    ai/
+      agentOrchestrator    intent routing + persona-switch detection (EN/HI)
+      personalityManager   GF / Professional / Venom + TTS options + shaping
+      toneEngine           emotional tone matching (EN + Hindi cues)
+      subAgentWorker       background priority queue (STEP 4)
+    voice/
+      languageManager      EN/HI locale + detection (Devanagari)
+      sttEngine            expo-speech-recognition wrapper (EN/HI, interim/final)
+      ttsEngine            expo-speech wrapper, persona-aware pitch/rate
+      audioStreamer        VoiceSession: full-duplex loop + barge-in
+    vision/        screenCapture, cameraVision (STEP 4)
     automation/    accessibilityBridge, macroRecorder (STEP 4)
     integrations/  whatsappService, spotify (STEP 4)
-  store/           userState (Zustand), memoryStore (later)
-```
+  store/
+    userState        persona (synced to PersonalityManager) + voice flags
+    conversationState voice session <-> UI wiring + turn history
+
+## Voice dependencies (SDK 57)
+- `expo-speech` (~57.0.1) — TTS
+- `expo-audio` (~57.0.4) — recording/playback (background recording)
+- `expo-speech-recognition` (~56.0.1) — STT (`npx expo install --fix` to align)
 
 ## Roadmap
 
 - STEP 1 ✅ Project init, navigation, eas.json, CI, service scaffolding
 - STEP 2 ✅ UI Design System (navy/glass) + Loading / Dashboard / Sidebar / Settings
-- STEP 3 ⏳ Voice & Personality Engine (STT/TTS audio glue, EN/HI, personas)
-- STEP 4 — Device Automation & Sub-Agent Framework
+- STEP 3 ✅ Voice & Personality Engine — STT/TTS, EN/HI, personas, tone, barge-in
+- STEP 4 ⏳ Device Automation & Sub-Agent Framework
 - STEP 5 — Wiring, full flow test, build checklist

@@ -15,15 +15,25 @@ import { VoiceVisualizer } from './VoiceVisualizer';
 export function MicButton({ visible = true }: { visible?: boolean }) {
   const micActive = useUserStore((s) => s.micActive);
   const setMicActive = useUserStore((s) => s.setMicActive);
+  const setVoiceReady = useUserStore((s) => s.setVoiceReady);
 
   const toggle = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const next = !micActive;
-    setMicActive(next);
-    if (next) {
-      await audioStreamer.start();
-    } else {
-      await audioStreamer.stop();
+    try {
+      if (next) {
+        await audioStreamer.start();
+        setMicActive(true);
+        setVoiceReady(true);
+      } else {
+        await audioStreamer.stop();
+        setMicActive(false);
+        setVoiceReady(false);
+      }
+    } catch (e) {
+      console.warn('[Cthos:Mic]', e);
+      setMicActive(false);
+      setVoiceReady(false);
     }
   };
 
@@ -34,6 +44,7 @@ export function MicButton({ visible = true }: { visible?: boolean }) {
       <Pressable
         onPress={toggle}
         accessibilityRole="button"
+        accessibilityState={{ checked: micActive }}
         accessibilityLabel={micActive ? 'Stop listening' : 'Start listening'}
         style={({ pressed }) => [
           styles.btn,
