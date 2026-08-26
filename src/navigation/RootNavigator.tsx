@@ -6,29 +6,28 @@ import { SettingsScreen } from '../screens/SettingsScreen';
 import { VisionScreen } from '../screens/VisionScreen';
 import { MacroScreen } from '../screens/MacroScreen';
 import { LoadingScreen } from '../screens/LoadingScreen';
+import { SidebarDrawer } from '../components/SidebarDrawer';
 import { DrawerParamList, RootStackParamList } from './types';
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 /**
- * Drawer navigator — HOME / PRODUCTIVITY / SYSTEM grouping will be layered
- * on top in STEP 2 via custom drawer content. For STEP 1 we register the four
- * primary destinations.
+ * Drawer navigator — custom three-section SidebarDrawer (HOME / PRODUCTIVITY /
+ * SYSTEM) with the navy scrim. Registers the four primary destinations.
  */
 function MainDrawerNavigator() {
   return (
     <Drawer.Navigator
+      drawerContent={(props) => <SidebarDrawer {...props} />}
       screenOptions={{
         headerShown: false,
         drawerType: 'front',
-        drawerActiveBackgroundColor: '#1E2747',
-        drawerActiveTintColor: '#4A90E2',
-        drawerInactiveTintColor: 'rgba(244,247,255,0.6)',
         drawerStyle: {
-          backgroundColor: 'rgba(11,16,30,0.96)',
-          width: 300,
+          backgroundColor: 'transparent',
+          width: 320,
         },
+        overlayColor: 'rgba(2,5,12,0.55)',
       }}
     >
       <Drawer.Screen name="Dashboard" component={DashboardScreen} />

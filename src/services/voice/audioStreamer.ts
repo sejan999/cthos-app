@@ -35,3 +35,6 @@ export class AudioStreamer implements VoiceEngine {
     return this.capturing;
   }
 }
+
+/** Shared engine instance used by the UI (MicButton) and future orchestrators. */
+export const audioStreamer = new AudioStreamer();

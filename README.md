@@ -5,8 +5,9 @@ control, multimodal vision, and multi-persona conversation.
 
 Built with **React Native (Expo SDK 57)** + modular native-bridge architecture.
 
-> **Status: STEP 1 (Project Initialization) complete.**
-> Next: STEP 2 — UI Design System & the 4 primary screens.
+> **Status: STEP 2 (UI Design System & Screens) complete.**
+> Next: STEP 3 — Voice & Personality Engine (real-time streaming, EN/HI,
+> persona switching).
 
 ---
 
@@ -65,11 +66,15 @@ Set repo secret **`EXPO_TOKEN`** (EAS account token).
 ```
 /src
   assets/          icons, sounds, avatar models
-  components/      common UI widgets (STEP 2)
-  theme/           design tokens (navy/glassmorphism)
+  theme/           design tokens (navy/glassmorphism palette, spacing, radii)
+  components/      UI system:
+                     GlassCard, PillButton, SettingsRow, DataWidget
+                     GlowingHeart, CthosLogo, AvatarViewport, VoiceVisualizer,
+                     MicButton, SidebarDrawer
   config/          permissions manifest (json)
-  navigation/      Stack + Drawer + typed params
-  screens/         Loading, Dashboard, Settings, Vision, Macro
+  navigation/      Stack + Drawer (custom sectioned SidebarDrawer)
+  screens/         Step 2: Loading, Dashboard, Settings
+                   placeholder: Vision, Macro
   services/
     ai/            agentOrchestrator, personalityManager, subAgentWorker
     voice/         audioStreamer (STT/TTS/call gluer in STEP 3)
@@ -82,7 +87,7 @@ Set repo secret **`EXPO_TOKEN`** (EAS account token).
 ## Roadmap
 
 - STEP 1 ✅ Project init, navigation, eas.json, CI, service scaffolding
-- STEP 2 ⏳ UI Design System + 4 primary screens
-- STEP 3 — Voice & Personality Engine
+- STEP 2 ✅ UI Design System (navy/glass) + Loading / Dashboard / Sidebar / Settings
+- STEP 3 ⏳ Voice & Personality Engine (STT/TTS audio glue, EN/HI, personas)
 - STEP 4 — Device Automation & Sub-Agent Framework
 - STEP 5 — Wiring, full flow test, build checklist

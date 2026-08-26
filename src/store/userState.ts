@@ -19,7 +19,7 @@ interface UserState {
 }
 
 export const useUserStore = create<UserState>((set) => ({
-  persona: 'Alex',
+  persona: 'Professional',
   voiceReady: false,
   micActive: false,
   currentLanguage: 'en',
