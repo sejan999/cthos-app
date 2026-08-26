@@ -1,0 +1,74 @@
+{
+  "title": "Cthos — Android Permissions Manifest",
+  "version": "0.1.0",
+  "note": "These permissions are declared declaratively here for audit/planning. Actual runtime grant is handled via expo-permissions/config plugins in later phases. Native-access taps, DND toggle, screen capture, accessibility gestures require native bridge config plugins (custom Expo modules) that are NOT enabled until STEP 4.",
+  "core": [
+    {
+      "key": "android.permission.RECORD_AUDIO",
+      "purpose": "Realtime voice engine — capture microphone stream for STT & conversation.",
+      "required": true
+    },
+    {
+      "key": "android.permission.INTERNET",
+      "purpose": "Cloud STT/TTS, media APIs (Spotify/YouTube), EAS Update.",
+      "required": true
+    },
+    {
+      "key": "android.permission.FOREGROUND_SERVICE",
+      "purpose": "Keep voice-engine sub-agent awake during background conversations.",
+      "required": true
+    },
+    {
+      "key": "android.permission.FOREGROUND_SERVICE_MICROPHONE",
+      "purpose": "Android 14+ foreground service type for continuous mic capture.",
+      "required": true
+    },
+    {
+      "key": "android.permission.WAKE_LOCK",
+      "purpose": "Prevent CPU sleep during real-time streaming & macro playback.",
+      "required": true
+    },
+    {
+      "key": "android.permission.ACCESS_NETWORK_STATE",
+      "purpose": "Detect connectivity for offline fallback / music streaming.",
+      "required": true
+    },
+    {
+      "key": "android.permission.VIBRATE",
+      "purpose": "Haptic feedback on UI interactions.",
+      "required": false
+    }
+  ],
+  "system_permissions_planned": [
+    {
+      "key": "SYSTEM_ALERT_WINDOW",
+      "purpose": "Overlay buttons — caller-ID banner & hands-free call control.",
+      "targetPhase": 4,
+      "grant": "ACTION_MANAGE_OVERLAY_PERMISSION"
+    },
+    {
+      "key": "BIND_ACCESSIBILITY_SERVICE",
+      "purpose": "Device automation: tapping, typing, scrolling, screen reading.",
+      "targetPhase": 4,
+      "grant": "AccessibilityService"
+    },
+    {
+      "key": "read_media_images / READ_EXTERNAL_STORAGE",
+      "purpose": "Share images via WhatsApp/email.",
+      "targetPhase": 4,
+      "grant": "Storage access framework"
+    },
+    {
+      "key": "NotificationListener",
+      "purpose": "Read unread chat/call notifications for WhatsApp automation.",
+      "targetPhase": 4,
+      "grant": "NotificationListenerService"
+    },
+    {
+      "key": "com.google.android.gms.permission.RECORD_AUDIO (optional)",
+      "purpose": "In-app calling / duplex audio plugin.",
+      "targetPhase": 4,
+      "grant": "Optional"
+    }
+  ]
+}
