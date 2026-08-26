@@ -30,6 +30,8 @@
     "expo-speech": "~57.0.1",
     "expo-audio": "~57.0.4",
     "expo-speech-recognition": "~56.0.1",
+    "expo-secure-store": "~57.0.1",
+    "@google/genai": "^2.19.0",
     "react": "19.2.3",
     "react-native": "0.86.2",
     "react-native-reanimated": "~4.5.0",

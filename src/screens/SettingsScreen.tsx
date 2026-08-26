@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { GlassCard } from '../components/GlassCard';
 import { SettingsRow } from '../components/SettingsRow';
 import { PersonaSwitcher } from '../components/PersonaSwitcher';
+import { GeminiKeyCard } from '../components/GeminiKeyCard';
 import { DrawerParamList } from '../navigation/types';
 import { theme } from '../theme';
 
@@ -91,6 +92,7 @@ export function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <GeminiKeyCard />
         {SECTIONS.map((section) => (
           <View key={section.title} style={styles.group}>
             <Text style={styles.groupTitle}>{section.title}</Text>

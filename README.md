@@ -5,8 +5,17 @@ control, multimodal vision, and multi-persona conversation.
 
 Built with **React Native (Expo SDK 57)** + modular native-bridge architecture.
 
-> **Status: STEP 3 (Voice & Personality Engine) complete.**
+> **Status: STEP 3 (Voice & Personality Engine) complete + Gemini Live brain wired in.**
 > Next: STEP 4 — Device Automation & Sub-Agent Framework.
+
+### Gemini Live brain
+
+`src/services/ai/geminiLive.ts` registers a persona-aware Gemini
+(`gemini-2.5-flash`) reply provider into the voice loop, so spoken turns get
+real model replies grounded by the active persona prompt + detected tone.
+The API key ("AQ"-prefixed) is stored encrypted via `expo-secure-store` —
+enter it in **Settings → Cloud & API keys** (`GeminiKeyCard`) or provide it at
+build time as `EXPO_PUBLIC_GEMINI_API_KEY`.
 
 ---
 
@@ -79,6 +88,8 @@ Set repo secret **`EXPO_TOKEN`** (EAS account token).
       agentOrchestrator    intent routing + persona-switch detection (EN/HI)
       personalityManager   GF / Professional / Venom + TTS options + shaping
       toneEngine           emotional tone matching (EN + Hindi cues)
+      aiKeyStore           Gemini API key mgmt (expo-secure-store, "AQ" prefix)
+      geminiLive           Gemini brain: persona/tone-grounded ReplyProvider
       subAgentWorker       background priority queue (STEP 4)
     voice/
       languageManager      EN/HI locale + detection (Devanagari)
@@ -96,6 +107,8 @@ Set repo secret **`EXPO_TOKEN`** (EAS account token).
 - `expo-speech` (~57.0.1) — TTS
 - `expo-audio` (~57.0.4) — recording/playback (background recording)
 - `expo-speech-recognition` (~56.0.1) — STT (`npx expo install --fix` to align)
+- `expo-secure-store` (~57.0.1) — encrypted Gemini API key storage
+- `@google/genai` (^2.19.0) — Gemini brain (persona-grounded replies)
 
 ## Roadmap
 
