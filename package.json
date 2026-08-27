@@ -10,6 +10,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
+    "flowaudit": "python3 scripts/flow_audit.py",
     "prebuild": "expo prebuild",
     "eas-build:dev": "eas build --profile development --platform android",
     "eas-build:preview": "eas build --profile preview --platform android",

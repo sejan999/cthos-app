@@ -5,8 +5,9 @@ control, multimodal vision, and multi-persona conversation.
 
 Built with **React Native (Expo SDK 57)** + modular native-bridge architecture.
 
-> **Status: STEP 4 (Device Automation & Sub-Agent Framework) complete.**
-> Next: STEP 5 — Wiring, full flow test, build checklist.
+> **Status: STEP 5 complete — full build: voice loop, Gemini brain, device
+> automation, Macro Studio, persistence & release checklist.**
+> See `BUILD_CHECKLIST.md` before shipping.
 
 ### Gemini Live brain
 
@@ -91,6 +92,7 @@ Set repo secret **`EXPO_TOKEN`** (EAS account token).
 ## Source Layout
 
 ```
+/scripts   flow_audit.py — static full-flow wiring audit (no Node needed)
 /src
   assets/          icons, sounds, avatar models
   theme/           design tokens (navy/glassmorphism palette, spacing, radii)
@@ -137,4 +139,6 @@ Set repo secret **`EXPO_TOKEN`** (EAS account token).
 - STEP 3 ✅ Voice & Personality Engine — STT/TTS, EN/HI, personas, tone, barge-in
 - STEP 4 ✅ Device Automation & Sub-Agent Framework — command router, worker
   queue, automation bridge, Macro Studio, WhatsApp deep-link bridge
-- STEP 5 — Wiring, full flow test, build checklist
+- STEP 5 ✅ Wiring & release — text-input pipeline, live engine status,
+  conversation + persona persistence (secure store), `scripts/flow_audit.py`
+  full-flow verification, `BUILD_CHECKLIST.md`

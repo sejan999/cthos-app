@@ -5,9 +5,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { initVoice } from './src/store/conversationState';
+import { hydratePersona } from './src/store/userState';
 
-// Start the voice session <-> UI store binding once at app boot.
+// Start the voice session <-> UI store binding once at app boot,
+// and restore the last-used persona from encrypted storage.
 initVoice();
+void hydratePersona();
 
 /**
  * Themed navigation container — forces the dark-navy palette so React

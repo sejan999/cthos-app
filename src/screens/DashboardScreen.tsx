@@ -19,6 +19,10 @@ import { PillButton } from '../components/PillButton';
 import { DataWidget } from '../components/DataWidget';
 import { MicButton } from '../components/MicButton';
 import { useUserStore } from '../store/userState';
+import {
+  useConversationStore,
+  submitText,
+} from '../store/conversationState';
 import { DrawerParamList } from '../navigation/types';
 import { theme } from '../theme';
 
@@ -39,7 +43,22 @@ const QUICK_ACTIONS: { label: string; icon: IoniconName }[] = [
 export function DashboardScreen() {
   const navigation = useNavigation<DrawerNavigationProp<DrawerParamList>>();
   const persona = useUserStore((s) => s.persona);
+  const micActive = useUserStore((s) => s.micActive);
+  const engineState = useConversationStore((s) => s.engineState);
   const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
+
+  async function sendDraft() {
+    const text = draft.trim();
+    if (!text || sending) return;
+    setSending(true);
+    setDraft('');
+    try {
+      await submitText(text);
+    } finally {
+      setSending(false);
+    }
+  }
 
   const greeting = useMemo(() => {
     const h = new Date().getHours();
@@ -78,8 +97,23 @@ export function DashboardScreen() {
             <View style={styles.headerCenter}>
               <CthosLogo size="compact" />
               <View style={styles.onlineRow}>
-                <View style={styles.onlineDot} />
-                <Text style={styles.onlineText}>voice ready</Text>
+                <View
+                  style={[
+                    styles.onlineDot,
+                    (micActive || engineState === 'speaking') && {
+                      backgroundColor: theme.palette.warning,
+                    },
+                  ]}
+                />
+                <Text style={styles.onlineText}>
+                  {engineState === 'speaking'
+                    ? 'speaking'
+                    : engineState === 'thinking'
+                      ? 'thinking…'
+                      : micActive || engineState === 'listening'
+                        ? 'listening'
+                        : 'voice ready'}
+                </Text>
               </View>
             </View>
             <Pressable
@@ -129,13 +163,17 @@ export function DashboardScreen() {
               placeholder="Message Cthos…"
               placeholderTextColor={theme.palette.text.low}
               style={styles.input}
+              returnKeyType="send"
+              onSubmitEditing={sendDraft}
             />
             <Pressable
-              disabled={!draft.trim()}
+              onPress={sendDraft}
+              disabled={!draft.trim() || sending}
               accessibilityLabel="Send"
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.sendBtn,
-                { opacity: draft.trim() ? 1 : 0.4 },
+                { opacity: draft.trim() && !sending ? 1 : 0.4 },
                 pressed && { transform: [{ scale: 0.92 }] },
               ]}
             >
