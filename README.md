@@ -5,8 +5,8 @@ control, multimodal vision, and multi-persona conversation.
 
 Built with **React Native (Expo SDK 57)** + modular native-bridge architecture.
 
-> **Status: STEP 3 (Voice & Personality Engine) complete + Gemini Live brain wired in.**
-> Next: STEP 4 — Device Automation & Sub-Agent Framework.
+> **Status: STEP 4 (Device Automation & Sub-Agent Framework) complete.**
+> Next: STEP 5 — Wiring, full flow test, build checklist.
 
 ### Gemini Live brain
 
@@ -16,6 +16,25 @@ real model replies grounded by the active persona prompt + detected tone.
 The API key ("AQ"-prefixed) is stored encrypted via `expo-secure-store` —
 enter it in **Settings → Cloud & API keys** (`GeminiKeyCard`) or provide it at
 build time as `EXPO_PUBLIC_GEMINI_API_KEY`.
+
+### Device automation & sub-agents (STEP 4)
+
+Spoken commands now execute on-device before falling back to conversation:
+
+- **commandRouter** — the voice reply pipeline is
+  `commandRouter → geminiReplyProvider`. Routine triggers win first, then
+  deterministic EN/HI intents (`open whatsapp`, `dnd bandh karo`, `scroll down`,
+  `play spotify`, `send message`, `unread`), then Gemini chat.
+- **subAgentWorker** — priority queue with bounded concurrency, per-kind
+  handler registry (`automation/macro/music/whatsapp`), job lifecycle events,
+  failure history for dashboards.
+- **accessibilityBridge** — single dispatcher for `tap/type/scroll/toggle/
+  openApp`. Deep-link app opening works today in Expo Go; gesture & system
+  toggles activate with the `CthosAccessibility` native module (EAS dev client)
+  and degrade gracefully (clear reason, no crash) until then.
+- **Macro Studio** — record routines from quick-step chips, save with a name,
+  trigger by voice or play/delete from the list. Playback runs through the
+  sub-agent queue so it never blocks the live conversation thread.
 
 ---
 
@@ -82,7 +101,7 @@ Set repo secret **`EXPO_TOKEN`** (EAS account token).
   config/          permissions manifest (json)
   navigation/      Stack + Drawer (custom sectioned SidebarDrawer)
   screens/         Step 2: Loading, Dashboard, Settings
-                   placeholder: Vision, Macro
+                   Step 4: Macro (Macro Studio); Vision stays STEP 5
   services/
     ai/
       agentOrchestrator    intent routing + persona-switch detection (EN/HI)
@@ -90,15 +109,16 @@ Set repo secret **`EXPO_TOKEN`** (EAS account token).
       toneEngine           emotional tone matching (EN + Hindi cues)
       aiKeyStore           Gemini API key mgmt (expo-secure-store, "AQ" prefix)
       geminiLive           Gemini brain: persona/tone-grounded ReplyProvider
-      subAgentWorker       background priority queue (STEP 4)
+      commandRouter        automation-first router -> Gemini chat fallback
+      subAgentWorker       concurrent priority queue + handler registry (STEP 4)
     voice/
       languageManager      EN/HI locale + detection (Devanagari)
       sttEngine            expo-speech-recognition wrapper (EN/HI, interim/final)
       ttsEngine            expo-speech wrapper, persona-aware pitch/rate
       audioStreamer        VoiceSession: full-duplex loop + barge-in
-    vision/        screenCapture, cameraVision (STEP 4)
-    automation/    accessibilityBridge, macroRecorder (STEP 4)
-    integrations/  whatsappService, spotify (STEP 4)
+    vision/        screenCapture, cameraVision (STEP 5)
+    automation/    accessibilityBridge (+types), commandParser, macroRecorder (STEP 4)
+    integrations/  whatsappService (deep-link send today; gestures w/ dev client)
   store/
     userState        persona (synced to PersonalityManager) + voice flags
     conversationState voice session <-> UI wiring + turn history
@@ -115,5 +135,6 @@ Set repo secret **`EXPO_TOKEN`** (EAS account token).
 - STEP 1 ✅ Project init, navigation, eas.json, CI, service scaffolding
 - STEP 2 ✅ UI Design System (navy/glass) + Loading / Dashboard / Sidebar / Settings
 - STEP 3 ✅ Voice & Personality Engine — STT/TTS, EN/HI, personas, tone, barge-in
-- STEP 4 ⏳ Device Automation & Sub-Agent Framework
+- STEP 4 ✅ Device Automation & Sub-Agent Framework — command router, worker
+  queue, automation bridge, Macro Studio, WhatsApp deep-link bridge
 - STEP 5 — Wiring, full flow test, build checklist

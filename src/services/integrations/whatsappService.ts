@@ -1,9 +1,17 @@
 /**
  * WhatsApp & WhatsApp Business automation bridge — voice-triggered messaging,
  * unread reader, media attachment, VoIP call triggers.
- * Interface contract now; native accessibility/intent glue lands in STEP 4.
+ *
+ * STEP 4: jobs route through the shared sub-agent worker. Real gesture-level
+ * actions (taps/typing inside chats) require the CthosAccessibility native
+ * module from the EAS dev client; until then, sending opens the WhatsApp
+ * deep link so voice "send a whatsapp" already does something useful.
  */
 import { SubAgentJob, SubAgentHandler } from '../ai/subAgentWorker';
+import {
+  accessibilityBridge,
+  AutomationResult,
+} from '../automation/accessibilityBridge';
 
 export interface WhatsAppMessage {
   id: string;
@@ -16,10 +24,9 @@ export interface WhatsAppMessage {
 
 export class WhatsAppService implements SubAgentHandler {
   async execute(job: SubAgentJob): Promise<void> {
-    // STEP 4: route job.task -> send/read/attach/call via Accessibility/Bridge.
     switch (job.task.split(':')[0]) {
       case 'send':
-        await this.sendMessage(job.task.split(':').slice(1).join(''));
+        await this.sendMessage(job.task.split(':').slice(1).join(':') || '');
         break;
       case 'read':
         await this.readUnread();
@@ -29,11 +36,14 @@ export class WhatsAppService implements SubAgentHandler {
     }
   }
 
-  async sendMessage(_composed: string): Promise<string> {
-    return 'sent';
+  /** Opens WhatsApp (deep link works today; typed delivery needs native glue). */
+  async sendMessage(composed = ''): Promise<string> {
+    const result: AutomationResult = await accessibilityBridge.openApp('whatsapp');
+    return result.ok ? 'opened' : result.detail;
   }
 
   async readUnread(): Promise<WhatsAppMessage[]> {
+    // Native AccessibilityService reads notification/chat nodes (dev client).
     return [];
   }
 }

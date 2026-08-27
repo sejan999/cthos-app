@@ -2,6 +2,10 @@ import { create } from 'zustand';
 import { AssistantTurn, Utterance } from '../services/types';
 import { audioStreamer } from '../services/voice/audioStreamer';
 import { geminiReplyProvider } from '../services/ai/geminiLive';
+import {
+  commandRouter,
+  registerSubAgentHandlers,
+} from '../services/ai/commandRouter';
 
 /**
  * In-memory conversation history for the current session. Populated by wiring
@@ -33,13 +37,16 @@ export const useConversationStore = create<ConversationState>((set) => ({
 /**
  * Bind the shared voice session to the UI stores. Call once at app start.
  *
- * The Gemini Live brain is registered as the reply provider so every voiced
- * exchange is answered by the persona-aware model. When no API key is stored
- * the brain falls back to a friendly "needs a key" prompt instead of breaking
- * the loop.
+ * Reply pipeline (STEP 4):
+ *   commandRouter (routines + device automation, via subAgentWorker)
+ *     -> geminiReplyProvider fallback (persona-aware chat brain)
+ * When no API key is stored the brain falls back to a friendly "needs a key"
+ * prompt instead of breaking the loop.
  */
 export function initVoice() {
-  audioStreamer.setReplyProvider(geminiReplyProvider);
+  registerSubAgentHandlers();
+  commandRouter.setFallback(geminiReplyProvider);
+  audioStreamer.setReplyProvider(commandRouter.handleUtterance);
 
   let lastUser: Utterance | null = null;
   audioStreamer.on({

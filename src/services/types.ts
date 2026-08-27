@@ -8,6 +8,14 @@ export type Language = 'en' | 'hi';
 
 export type PersonaId = 'GF' | 'Professional' | 'Venom';
 
+/** Capability buckets the background sub-agent workers can execute. */
+export type SubAgentKind =
+  | 'automation'
+  | 'macro'
+  | 'whatsapp'
+  | 'music'
+  | 'generic';
+
 export type SubAgentStatus =
   | 'idle'
   | 'queued'
@@ -18,10 +26,14 @@ export type SubAgentStatus =
 
 export interface SubAgentJob {
   id: string;
+  /** Which handler pool this job routes to. */
+  kind: SubAgentKind;
   task: string;
   priority: number;
   createdAt: number;
   status: SubAgentStatus;
+  /** Populated when status === 'failed'. */
+  error?: string;
 }
 
 export interface Utterance {
@@ -64,22 +76,6 @@ export type VoiceActivityEvent =
   | 'thinking'
   | 'interruption'
   | 'utterance_complete';
-
-export type SubAgentStatus =
-  | 'idle'
-  | 'queued'
-  | 'running'
-  | 'paused'
-  | 'done'
-  | 'failed';
-
-export interface SubAgentJob {
-  id: string;
-  task: string;
-  priority: number;
-  createdAt: number;
-  status: SubAgentStatus;
-}
 
 export interface VoiceEngineEvents {
   onInterim?: (partial: Utterance) => void;
