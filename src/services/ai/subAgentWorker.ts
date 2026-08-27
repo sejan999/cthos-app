@@ -78,6 +78,14 @@ export class SubAgentWorker {
     }
   }
 
+  /**
+   * Max wall-clock time a single job may run before being marked failed and
+   * its slot freed. Without this, one hung native call would permanently
+   * consume a concurrency slot and eventually stall all background work
+   * (a slow-memory death on low-RAM devices).
+   */
+  jobTimeoutMs = 30000;
+
   private async runOne(job: SubAgentJob): Promise<void> {
     const handler = this.handlers.get(job.kind);
     if (!handler) {
@@ -89,13 +97,26 @@ export class SubAgentWorker {
     }
     job.status = 'running';
     this.notify(job);
+    let timeout: ReturnType<typeof setTimeout> | undefined;
     try {
-      await handler.execute(job);
-      job.status = 'done';
+      await Promise.race([
+        (async () => {
+          await handler.execute(job);
+          if (job.status !== 'failed') job.status = 'done';
+        })(),
+        new Promise<never>((_, reject) => {
+          timeout = setTimeout(
+            () => reject(new Error(`job timed out after ${this.jobTimeoutMs}ms`)),
+            this.jobTimeoutMs,
+          );
+        }),
+      ]);
     } catch (e) {
       job.status = 'failed';
       job.error = e instanceof Error ? e.message : String(e);
       console.error('[CthosSubAgent] job failed', job.id, e);
+    } finally {
+      if (timeout !== undefined) clearTimeout(timeout);
     }
     this.recordHistory(job);
     this.notify(job);

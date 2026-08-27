@@ -69,26 +69,46 @@ export class AccessibilityBridge {
 
   async tap(x: number, y: number): Promise<AutomationResult> {
     if (!native) return this.unavailable('tap');
-    const ok = await native.tap(x, y);
-    return { ok, detail: ok ? `tapped ${x},${y}` : 'native tap rejected' };
+    try {
+      const ok = await native.tap(x, y);
+      return { ok, detail: ok ? `tapped ${x},${y}` : 'native tap rejected' };
+    } catch (e) {
+      console.warn('[Cthos:Bridge] tap failed', e);
+      return { ok: false, detail: 'native tap threw on this device' };
+    }
   }
 
   async type(text: string): Promise<AutomationResult> {
     if (!native) return this.unavailable('type');
-    const ok = await native.typeText(text);
-    return { ok, detail: ok ? `typed ${text.length} chars` : 'native typing rejected' };
+    try {
+      const ok = await native.typeText(text);
+      return { ok, detail: ok ? `typed ${text.length} chars` : 'native typing rejected' };
+    } catch (e) {
+      console.warn('[Cthos:Bridge] type failed', e);
+      return { ok: false, detail: 'native typing threw on this device' };
+    }
   }
 
   async scroll(dir: 'up' | 'down'): Promise<AutomationResult> {
     if (!native) return this.unavailable('scroll');
-    const ok = await native.scroll(dir);
-    return { ok, detail: ok ? `scrolled ${dir}` : 'native scroll rejected' };
+    try {
+      const ok = await native.scroll(dir);
+      return { ok, detail: ok ? `scrolled ${dir}` : 'native scroll rejected' };
+    } catch (e) {
+      console.warn('[Cthos:Bridge] scroll failed', e);
+      return { ok: false, detail: 'native scroll threw on this device' };
+    }
   }
 
   async setSystemToggle(toggle: SystemToggle): Promise<AutomationResult> {
     if (!native) return this.unavailable(`toggle:${toggle}`);
-    const ok = await native.setSystemToggle(toggle);
-    return { ok, detail: ok ? `${toggle} toggled` : `native toggle ${toggle} rejected` };
+    try {
+      const ok = await native.setSystemToggle(toggle);
+      return { ok, detail: ok ? `${toggle} toggled` : `native toggle ${toggle} rejected` };
+    } catch (e) {
+      console.warn('[Cthos:Bridge] toggle failed', e);
+      return { ok: false, detail: `toggle "${toggle}" threw on this device` };
+    }
   }
 
   /**

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -35,6 +35,25 @@ const QUICK_ACTIONS: { label: string; icon: IoniconName }[] = [
 ];
 
 /**
+ * Hermes ships without full ICU data on many Android devices, so
+ * `toLocaleDateString` can return undefined behaviour or empty output there.
+ * This manual formatter is deterministic on BOTH Hermes and JSC.
+ */
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+function formatToday(d: Date): string {
+  try {
+    return `${WEEKDAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  } catch {
+    return '';
+  }
+}
+
+/**
  * Screen 2 — Main Dashboard.
  * Glass header card, central 3D avatar viewport, quick-action pills, weather /
  * date / mood data widgets, the conversational input bar and the floating mic
@@ -48,18 +67,6 @@ export function DashboardScreen() {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
 
-  async function sendDraft() {
-    const text = draft.trim();
-    if (!text || sending) return;
-    setSending(true);
-    setDraft('');
-    try {
-      await submitText(text);
-    } finally {
-      setSending(false);
-    }
-  }
-
   const greeting = useMemo(() => {
     const h = new Date().getHours();
     if (h < 12) return 'Good morning';
@@ -67,15 +74,22 @@ export function DashboardScreen() {
     return 'Good evening';
   }, []);
 
-  const today = useMemo(
-    () =>
-      new Date().toLocaleDateString(undefined, {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short',
-      }),
-    []
-  );
+  const today = useMemo(() => formatToday(new Date()), []);
+
+  // Stable callbacks keep the input dock from re-rendering on every keystroke.
+  const sendDraft = useCallback(async () => {
+    const text = draft.trim();
+    if (!text || sending) return;
+    setSending(true);
+    setDraft('');
+    try {
+      await submitText(text);
+    } catch (e) {
+      console.warn('[Cthos:Dashboard] submit failed', e);
+    } finally {
+      setSending(false);
+    }
+  }, [draft, sending]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>

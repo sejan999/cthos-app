@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -56,14 +56,32 @@ export function MacroScreen() {
     setNameDraft('');
   }
 
+  // Stable FlatList callbacks: without these, every keystroke re-creates the
+  // closures and re-renders every visible row — noticeable jank on low-RAM
+  // Android devices.
+  const renderRoutine = useCallback(
+    ({ item }: { item: MacroRoutine }) => <RoutineRow routine={item} />,
+    [],
+  );
+  const keyRoutine = useCallback((r: MacroRoutine) => r.id, []);
+  const RoutineSeparator = useCallback(
+    () => <View style={{ height: theme.spacing.sm }} />,
+    [],
+  );
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <FlatList
         data={routines}
-        keyExtractor={(r) => r.id}
+        keyExtractor={keyRoutine}
+        renderItem={renderRoutine}
+        ItemSeparatorComponent={RoutineSeparator}
         contentContainerStyle={styles.scroll}
-        ItemSeparatorComponent={() => <View style={{ height: theme.spacing.sm }} />}
-        renderItem={({ item }) => <RoutineRow routine={item} />}
+        // Low-RAM Android: windowing + smaller batches keep memory flat.
+        removeClippedSubviews
+        maxToRenderPerBatch={6}
+        windowSize={7}
+        initialNumToRender={8}
         ListHeaderComponent={
           <>
             <Text style={styles.heading}>Macro Studio</Text>
@@ -177,7 +195,7 @@ export function MacroScreen() {
   );
 }
 
-function RoutineRow({ routine }: { routine: MacroRoutine }) {
+function RoutineRowBase({ routine }: { routine: MacroRoutine }) {
   return (
     <GlassCard>
       <View style={styles.row}>
@@ -207,6 +225,9 @@ function RoutineRow({ routine }: { routine: MacroRoutine }) {
     </GlassCard>
   );
 }
+
+/** Memoized row: only re-renders when ITS routine object identity changes. */
+const RoutineRow = React.memo(RoutineRowBase);
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.palette.navy.base },

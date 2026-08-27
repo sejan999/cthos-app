@@ -61,18 +61,29 @@ export class VoiceSession implements VoiceEngine {
   }
 
   async start(): Promise<void> {
-    this.listeners.onStateChange?.('listening');
-    await sttEngine.start(languageManager.current);
+    try {
+      this.listeners.onStateChange?.('listening');
+      await sttEngine.start(languageManager.current);
+    } catch (e) {
+      console.warn('[Cthos:Voice] start failed', e);
+      this.listeners.onStateChange?.('silence');
+    }
   }
 
   async stop(): Promise<void> {
-    await ttsEngine.cancel();
-    await sttEngine.stop();
-    this.listeners.onStateChange?.('silence');
+    try {
+      await ttsEngine.cancel();
+      await sttEngine.stop();
+      this.listeners.onStateChange?.('silence');
+    } catch (e) {
+      console.warn('[Cthos:Voice] stop failed', e);
+      this.listeners.onStateChange?.('silence');
+    }
   }
 
   switchLanguage(lang: Language): void {
     languageManager.current = lang;
+    // sttEngine.start is hardened and never rejects.
     if (sttEngine.isActive()) void sttEngine.start(lang);
   }
 
@@ -84,30 +95,60 @@ export class VoiceSession implements VoiceEngine {
     await ttsEngine.cancel();
   }
 
-  /** Serialize turns so replies never overlap. */
+  /**
+   * Serialize turns so replies never overlap.
+   *
+   * IMPORTANT: the chain is caught before each `.then(task)` — without that,
+   * a single rejection would poison the queue and silently drop EVERY future
+   * turn (observed as "assistant stops responding" after one glitch).
+   */
   private enqueue(task: () => Promise<void>) {
-    this.runningQueue = this.runningQueue.then(task);
+    this.runningQueue = this.runningQueue
+      .catch(() => {
+        /* previous turn's failure must not sink the queue */
+      })
+      .then(task)
+      .catch((e) => console.warn('[Cthos:Voice] turn failed', e));
   }
 
   private async processUtterance(u: Utterance): Promise<void> {
-    const text = u.text.trim();
+    const text = typeof u?.text === 'string' ? u.text.trim() : '';
     if (!text) return;
     this.listeners.onStateChange?.('thinking');
 
-    const intent = agentOrchestrator.classify(text, languageManager.current);
-    const lang = languageManager.detect(text);
+    try {
+      const intent = agentOrchestrator.classify(text, languageManager.current);
+      const lang = languageManager.detect(text);
 
-    if (intent.action === 'persona_switch' && intent.requestedPersona) {
-      personalityManager.setPersona(intent.requestedPersona);
-      const confirm = this.defaultResponder(intent.action);
-      await this.speakReply(confirm, lang, intent.tone, true);
-      return;
+      if (intent.action === 'persona_switch' && intent.requestedPersona) {
+        try {
+          personalityManager.setPersona(intent.requestedPersona);
+        } catch (e) {
+          console.warn('[Cthos:Voice] persona switch failed', e);
+        }
+        const confirm = this.defaultResponder(intent.action);
+        await this.speakReply(confirm, lang, intent.tone, true);
+        return;
+      }
+
+      // The reply provider (command router -> Gemini) runs inside its own
+      // guard: a network failure or a parsing bug must fall back to a spoken
+      // message instead of leaving an unhandled rejection on the turn queue.
+      let reply: string;
+      try {
+        reply = this.replyProvider
+          ? await this.replyProvider({ ...u, text })
+          : this.defaultResponder(intent.action);
+      } catch (e) {
+        console.warn('[Cthos:Voice] reply provider failed', e);
+        reply = 'I had trouble reaching my brain just now. Try again in a moment.';
+      }
+      await this.speakReply(reply, lang, intent.tone, true);
+    } catch (e) {
+      // Absolute last line of defence for the conversation thread.
+      console.warn('[Cthos:Voice] utterance processing failed', e);
+      this.listeners.onStateChange?.('silence');
     }
-
-    const reply = this.replyProvider
-      ? await this.replyProvider(u)
-      : this.defaultResponder(intent.action);
-    await this.speakReply(reply, lang, intent.tone, true);
   }
 
   private defaultResponder(action: AgentAction): string {
@@ -125,15 +166,33 @@ export class VoiceSession implements VoiceEngine {
   }
 
   private async speakReply(text: string, lang: Language, tone: ToneProfile, voiced: boolean) {
-    const shaped = personalityManager.shapeReply(text, tone);
+    let shaped = text;
+    try {
+      shaped = personalityManager.shapeReply(text, tone);
+    } catch (e) {
+      console.warn('[Cthos:Voice] reply shaping failed — using raw text', e);
+    }
     if (!voiced) {
       this.listeners.onReplyDone?.(shaped);
       return;
     }
     this.listeners.onStateChange?.('speaking');
-    await ttsEngine.speak(shaped, lang);
+    try {
+      await ttsEngine.speak(shaped, lang); // never rejects (hardened TTS)
+    } catch (e) {
+      console.warn('[Cthos:Voice] tts speak failed', e);
+    }
     this.listeners.onStateChange?.('silence');
-    this.listeners.onReplyDone?.(shaped);
+    this.safeNotifyReplyDone(shaped);
+  }
+
+  /** Listener callbacks run arbitrary UI code — they must never throw here. */
+  private safeNotifyReplyDone(reply: string) {
+    try {
+      this.listeners.onReplyDone?.(reply);
+    } catch (e) {
+      console.warn('[Cthos:Voice] onReplyDone listener failed', e);
+    }
   }
 
   isActive() {

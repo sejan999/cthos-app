@@ -49,7 +49,9 @@ const RULES: ToneRule[] = [
 
 export class ToneEngine {
   detect(text: string): ToneProfile {
-    const lower = text.toLowerCase().trim();
+    // Coerce: voice/STT layers may hand us null-ish on odd devices.
+    const raw = typeof text === 'string' ? text : String(text ?? '');
+    const lower = raw.toLowerCase().trim();
     if (!lower) return { tone: 'neutral', confidence: 0, hint: 'No input' };
 
     let best: ToneProfile = { tone: 'neutral', confidence: 0.1, hint: 'Neutral baseline.' };
@@ -65,7 +67,7 @@ export class ToneEngine {
     }
 
     // An all-caps phrase reads as emphasis / urgency.
-    if (text.length > 6 && text === text.toUpperCase()) {
+    if (raw.length > 6 && raw === raw.toUpperCase()) {
       best = { tone: 'urgent', confidence: Math.max(best.confidence, 0.7), hint: 'Emphatic shouting — urgent.' };
     }
     return best;

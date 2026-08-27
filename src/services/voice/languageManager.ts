@@ -46,8 +46,9 @@ export class LanguageManager {
    * Devanagari or common Hinglish markers).
    */
   detect(text: string): Language {
-    if (DEVANAGARI_RE.test(text)) return 'hi';
-    const lo = text.toLowerCase();
+    if (!text) return 'en';
+    if (DEVANAGARI_RE.test(String(text))) return 'hi';
+    const lo = String(text).toLowerCase();
     if (/(hai|ho|kya|kaise|thik hai|nahi|haan|matlab|wala|wale)\b/.test(lo)) {
       return 'hi';
     }

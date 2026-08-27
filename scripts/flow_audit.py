@@ -72,7 +72,46 @@ def must_contain(rel_path, pattern, label):
 
 
 WIRING_CHECKS = [
-    ("../App.tsx", r"initVoice\(\)", "App boots call initVoice()"),
+    (
+        "../App.tsx",
+        r"installGlobalErrorTrap\(\)",
+        "global JS error trap installed at boot",
+    ),
+    (
+        "../App.tsx",
+        r"\(\) => initVoice\(\)",
+        "App boots call initVoice()",
+    ),
+    (
+        "../App.tsx",
+        r"<ErrorBoundary>",
+        "App root wrapped in ErrorBoundary",
+    ),
+    (
+        "components/ErrorBoundary.tsx",
+        r"getDerivedStateFromError",
+        "boundary catches render errors",
+    ),
+    (
+        "services/voice/sttEngine.ts",
+        r"probeNativeModule",
+        "STT degrades gracefully without native module",
+    ),
+    (
+        "services/voice/ttsEngine.ts",
+        r"moduleAvailable",
+        "TTS no-ops safely when native speech is missing",
+    ),
+    (
+        "services/voice/audioStreamer.ts",
+        r"\.catch\(\(\) => \{",
+        "turn queue immune to single-turn rejection poisoning",
+    ),
+    (
+        "services/ai/subAgentWorker.ts",
+        r"jobTimeoutMs",
+        "worker frees slots of hung jobs via watchdog",
+    ),
     (
         "../App.tsx",
         r"hydratePersona\(\)",

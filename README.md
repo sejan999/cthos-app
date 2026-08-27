@@ -9,6 +9,23 @@ Built with **React Native (Expo SDK 57)** + modular native-bridge architecture.
 > automation, Macro Studio, persistence & release checklist.**
 > See `BUILD_CHECKLIST.md` before shipping.
 
+### Stability & Android compatibility (hardening pass)
+
+- **Global protection** — root-level `ErrorBoundary` (`src/components/`) turns
+  any render-time exception into a themed reload screen; a global JS trap
+  (`src/utils/safeRun.ts`) logs fatals on Hermes AND JSC instead of dying
+  silently. Boot tasks run as supervised fire-and-forget so storage or voice
+  failures can never block UI mount.
+- **Voice engine hardening** — STT/TTS degrade to no-op modes when native
+  modules are missing or OEM engines misbehave; every listener body and every
+  native call is individually guarded; the serialized turn queue can no longer
+  be poisoned by a single failure.
+- **Universal Android** — no ICU-dependent date APIs (Hermes-safe formatter),
+  all `NativeModules`/expo surfaces probed at runtime, deep links + settings
+  fallbacks wrapped.
+- **Low-RAM performance** — worker watchdog frees hung job slots (30 s),
+  FlatLists use stable callbacks + memoized rows + windowing.
+
 ### Gemini Live brain
 
 `src/services/ai/geminiLive.ts` registers a persona-aware Gemini
