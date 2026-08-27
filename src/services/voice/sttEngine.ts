@@ -211,6 +211,10 @@ export class SttEngine {
     }
   }
 
+  isAvailable(): boolean {
+    return this.native !== null;
+  }
+
   isActive() {
     return this.recognising;
   }

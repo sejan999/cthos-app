@@ -28,6 +28,26 @@ Built with **React Native (Expo SDK 57)** + modular native-bridge architecture.
 
 ### Gemini Live brain
 
+**Deep-fix pass (core functionality repair):**
+
+- **RN-correct SDK entry** — the client is imported from
+  `@google/genai/web` (not the bare `@google/genai` package, whose cross-build
+  throws on React Native). This uses RN's global `fetch`/`WebSocket`, enabling
+  text generation today and `ai.live` WebSocket sessions in dev-client builds.
+- **API keys** — real AI Studio keys (`AIza…`) are accepted and persisted via
+  expo-secure-store; a stale "AQ-only" rule that rejected every valid key was
+  removed. Paste junk like `"Bearer …"` is cleaned automatically.
+- **Conversation memory** — the session keeps the last 8 exchanges; persona
+  switches reset memory so voices don't bleed context.
+- **No silent failures** — API errors raise one rate-limited native Alert and
+  return a readable sentence to the voice/text loop instead of vanishing.
+- **Visible replies** — the Dashboard renders the latest exchange so typed
+  commands always show their AI response even on muted devices.
+- **Mic feedback** — tapping the mic explains itself if speech recognition or
+  mic permission is unavailable rather than doing nothing.
+
+### Stability & Android compatibility (hardening pass)
+
 `src/services/ai/geminiLive.ts` registers a persona-aware Gemini
 (`gemini-2.5-flash`) reply provider into the voice loop, so spoken turns get
 real model replies grounded by the active persona prompt + detected tone.

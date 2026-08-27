@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useUserStore } from '../store/userState';
 import { audioStreamer } from '../services/voice/audioStreamer';
 import { PERSONAS } from '../services/ai/personalityManager';
+import { geminiLive } from '../services/ai/geminiLive';
 import { PersonaId } from '../services/types';
 import { theme } from '../theme';
 
@@ -19,6 +20,9 @@ export function PersonaSwitcher() {
   const select = (p: PersonaId) => {
     setPersona(p);
     audioStreamer.setPersona(p);
+    // A persona switch must not leak the previous persona's conversation
+    // context into the Gemini system prompt/history.
+    geminiLive.resetMemory();
   };
 
   return (

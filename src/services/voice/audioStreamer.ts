@@ -198,6 +198,11 @@ export class VoiceSession implements VoiceEngine {
   isActive() {
     return sttEngine.isActive();
   }
+
+  /** True when the native STT module exists — used for mic-tap feedback. */
+  sttAvailable(): boolean {
+    return sttEngine.isAvailable();
+  }
 }
 
 /** Shared engine instance used by the UI (MicButton), orchestrators & STEP 4. */

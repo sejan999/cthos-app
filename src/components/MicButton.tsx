@@ -1,30 +1,53 @@
-import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import React, { useRef } from 'react';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useUserStore } from '../store/userState';
 import { audioStreamer } from '../services/voice/audioStreamer';
+import { forget } from '../utils/safeRun';
 import { theme } from '../theme';
 import { VoiceVisualizer } from './VoiceVisualizer';
 
 /**
  * MicButton — the floating glowing-blue microphone. Toggles the voice engine
- * `micActive` store flag and starts/stops the AudioStreamer abstraction (real
- * STT/TTS glue arrives STEP 3). Haptics give tactile acknowledgement.
+ * `micActive` store flag and starts/stops the AudioStreamer (STT + TTS loop).
+ * Haptics give tactile acknowledgement; failures surface as a native Alert so
+ * "tapped the mic and nothing happened" can never be silent.
  */
 export function MicButton({ visible = true }: { visible?: boolean }) {
   const micActive = useUserStore((s) => s.micActive);
   const setMicActive = useUserStore((s) => s.setMicActive);
   const setVoiceReady = useUserStore((s) => s.setVoiceReady);
+  const warnedNoStt = useRef(false);
 
   const toggle = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    forget('mic:haptics', Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light));
+    if (!audioStreamer.sttAvailable()) {
+      if (!warnedNoStt.current) {
+        warnedNoStt.current = true;
+        Alert.alert(
+          'Voice unavailable',
+          'Speech recognition is not active in this build. Use a development client build (EAS) for live voice — text chat works everywhere.',
+        );
+      }
+      return;
+    }
     const next = !micActive;
     try {
       if (next) {
         await audioStreamer.start();
         setMicActive(true);
         setVoiceReady(true);
+        if (!audioStreamer.isActive()) {
+          // Start call resolved but recognition never armed — usually a
+          // denied mic permission on low-end OEM builds.
+          setMicActive(false);
+          setVoiceReady(false);
+          Alert.alert(
+            'Microphone blocked',
+            'Cthos could not start listening. Check that microphone permission is granted in Android Settings.',
+          );
+        }
       } else {
         await audioStreamer.stop();
         setMicActive(false);
@@ -36,6 +59,7 @@ export function MicButton({ visible = true }: { visible?: boolean }) {
       setVoiceReady(false);
     }
   };
+
 
   if (!visible) return null;
   return (

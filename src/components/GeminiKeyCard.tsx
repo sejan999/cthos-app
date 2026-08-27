@@ -32,13 +32,14 @@ export function GeminiKeyCard() {
     setSource(src);
     const stored = await apiKeyStore.get();
     if (src === 'secure' && stored) {
-      setMessage(`Using a key starting with ${apiKeyStore.prefix}… (stored)`);
+      setMessage(`Using a stored key starting with ${stored.slice(0, 6)}…`);
     } else if (src === 'env') {
-      setMessage(`Using the ${apiKeyStore.prefix}… key from the environment.`);
+      setMessage('Using the key provided by the environment.');
     } else {
       setMessage('No key yet — add one to enable live replies.');
     }
   }, []);
+
 
   useEffect(() => {
     void refresh();
@@ -94,13 +95,14 @@ export function GeminiKeyCard() {
         style={styles.input}
         value={value}
         onChangeText={setValue}
-        placeholder="Paste your AQ… Gemini API key"
+        placeholder="Paste your AIza… Gemini API key"
         placeholderTextColor={theme.palette.text.low}
         autoCapitalize="none"
         autoCorrect={false}
         secureTextEntry
         editable={!busy}
       />
+
 
       <View style={styles.actions}>
         <Pressable

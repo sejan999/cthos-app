@@ -128,6 +128,17 @@ WIRING_CHECKS = [
         "Gemini brain chained as router fallback",
     ),
     (
+        "services/ai/geminiLive.ts",
+        r"from '@google/genai/web'",
+        "Gemini client uses RN-compatible web build (fetch/WebSocket)",
+    ),
+    (
+        "services/ai/aiKeyStore.ts",
+        r"\['AIza', 'AQ'\]",
+        "API key validation accepts real AIza keys (not just AQ)",
+    ),
+
+    (
         "store/conversationState.ts",
         r"audioStreamer\.setReplyProvider\(commandRouter\.handleUtterance\)",
         "voice session routes through commandRouter",

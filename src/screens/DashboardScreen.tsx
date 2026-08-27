@@ -64,6 +64,10 @@ export function DashboardScreen() {
   const persona = useUserStore((s) => s.persona);
   const micActive = useUserStore((s) => s.micActive);
   const engineState = useConversationStore((s) => s.engineState);
+  // Latest exchange — rendered under the widgets so typed/spoken replies are
+  // always visible even on muted devices.
+  const turns = useConversationStore((s) => s.turns);
+  const lastTurn = turns.length ? turns[turns.length - 1] : null;
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -167,6 +171,15 @@ export function DashboardScreen() {
               accent={theme.palette.warning}
             />
           </View>
+
+          {lastTurn ? (
+            <GlassCard style={styles.replyCard}>
+              <Text style={styles.replyYou} numberOfLines={2}>
+                You: {lastTurn.userText}
+              </Text>
+              <Text style={styles.replyCthos}>{lastTurn.replyText}</Text>
+            </GlassCard>
+          ) : null}
         </ScrollView>
 
         <View style={styles.dock} pointerEvents="box-none">
@@ -253,6 +266,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     marginTop: theme.spacing.md,
   },
+  replyCard: {
+    marginHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.md,
+    padding: theme.spacing.md,
+  },
+  replyYou: { color: theme.palette.text.low, fontSize: 12, marginBottom: 6 },
+  replyCthos: { color: theme.palette.text.high, fontSize: 14, lineHeight: 20 },
   dock: {
     position: 'absolute',
     left: theme.spacing.lg,
