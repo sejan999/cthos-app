@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -46,9 +45,13 @@
         {
           "microphonePermission": "Allow Cthos to use your microphone for voice commands.",
           "speechRecognitionPermission": "Allow Cthos to perform speech recognition for conversational responses.",
-          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
         }
-      ]
+      ],
+      "expo-status-bar",
+      "expo-asset"
     ],
     "extra": {
       "eas": {
