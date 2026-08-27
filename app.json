@@ -8,7 +8,11 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.cthos.app"
+      "bundleIdentifier": "com.cthos.app",
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "Allow Cthos to perform speech recognition for conversational responses.",
+        "NSMicrophoneUsageDescription": "Allow Cthos to use your microphone for voice commands."
+      }
     },
     "android": {
       "package": "com.cthos.app",
@@ -18,7 +22,10 @@
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MICROPHONE",
-        "android.permission.WAKE_LOCK"
+        "android.permission.WAKE_LOCK",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
       ]
     },
     "plugins": [
@@ -46,7 +53,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "REPLACE_WITH_YOUR_EAS_PROJECT_ID"
+        "projectId": "1c206740-f601-487f-b82b-e8dba1fb2269"
       }
     },
     "runtimeVersion": {
@@ -54,6 +61,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/REPLACE_WITH_YOUR_EAS_PROJECT_ID"
-    }
+    },
+    "owner": "shimul702"
   }
 }
